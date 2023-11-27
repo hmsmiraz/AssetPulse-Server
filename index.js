@@ -10,7 +10,7 @@ app.use(cors());
 app.use(express.json());
 
 
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.meftkqt.mongodb.net/?retryWrites=true&w=majority`;
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
@@ -29,6 +29,7 @@ async function run() {
 
     // collections
     const userCollection = client.db("assetPulseDB").collection("users");
+    const assetCollection = client.db("assetPulseDB").collection("assets");
 
      // jwt api
      app.post("/jwt", async (req, res) => {
@@ -41,7 +42,7 @@ async function run() {
 
      // middlewares
      const verifyToken = (req, res, next) => {
-      console.log("Inside Middleware Token", req.headers.authorization);
+      // console.log("Inside Middleware Token", req.headers.authorization);
       if (!req.headers.authorization) {
         return res.status(401).send({ message: "Unauthorized access" });
       }
@@ -119,6 +120,25 @@ async function run() {
         return res.send({ message: "user already exist", insertedId: null });
       }
       const result = await userCollection.insertOne(user);
+      res.send(result);
+    });
+
+    // asset's api
+    app.get("/assets", async (req, res) => {
+      const result = await assetCollection.find().toArray();
+      res.send(result);
+    });
+
+    app.post("/assets", async (req, res) => {
+      const item = req.body;
+      const result = await assetCollection.insertOne(item);
+      res.send(result);
+    });
+
+    app.get("/assets/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId (id) };
+      const result = await assetCollection.findOne(query);
       res.send(result);
     });
     // Send a ping to confirm a successful connection

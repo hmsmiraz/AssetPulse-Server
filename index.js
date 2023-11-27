@@ -30,6 +30,7 @@ async function run() {
     // collections
     const userCollection = client.db("assetPulseDB").collection("users");
     const assetCollection = client.db("assetPulseDB").collection("assets");
+    const customReqCollection = client.db("assetPulseDB").collection("customReq");
 
      // jwt api
      app.post("/jwt", async (req, res) => {
@@ -141,6 +142,25 @@ async function run() {
       const result = await assetCollection.findOne(query);
       res.send(result);
     });
+    // customReq api
+    app.get("/customReq", async (req, res) => {
+      const result = await customReqCollection.find().toArray();
+      res.send(result);
+    });
+
+    app.post("/customReq", async (req, res) => {
+      const item = req.body;
+      const result = await customReqCollection.insertOne(item);
+      res.send(result);
+    });
+
+    app.get("/customReq/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId (id) };
+      const result = await customReqCollection.findOne(query);
+      res.send(result);
+    });
+
     // Send a ping to confirm a successful connection
     // await client.db("admin").command({ ping: 1 });
     // console.log("Pinged your deployment. You successfully connected to MongoDB!");

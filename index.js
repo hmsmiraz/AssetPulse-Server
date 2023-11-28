@@ -161,6 +161,13 @@ async function run() {
       res.send(result);
     });
 
+    app.delete("/customReq/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await customReqCollection.deleteOne(query);
+      res.send(result);
+    });
+
     app.get("/customReq/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
@@ -201,6 +208,13 @@ async function run() {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const result = await assetReqCollection.findOne(query);
+      res.send(result);
+    });
+
+    app.delete("/assetReq/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await assetReqCollection.deleteOne(query);
       res.send(result);
     });
     // Send a ping to confirm a successful connection

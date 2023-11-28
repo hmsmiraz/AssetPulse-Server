@@ -1,5 +1,5 @@
-const express = require('express')
-const app = express()
+const express = require("express");
+const app = express();
 require("dotenv").config();
 const jwt = require("jsonwebtoken");
 const cors = require("cors");
@@ -9,8 +9,7 @@ const port = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
-
-const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.meftkqt.mongodb.net/?retryWrites=true&w=majority`;
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
@@ -19,7 +18,7 @@ const client = new MongoClient(uri, {
     version: ServerApiVersion.v1,
     strict: true,
     deprecationErrors: true,
-  }
+  },
 });
 
 async function run() {
@@ -31,9 +30,10 @@ async function run() {
     const userCollection = client.db("assetPulseDB").collection("users");
     const assetCollection = client.db("assetPulseDB").collection("assets");
     const customReqCollection = client.db("assetPulseDB").collection("customReq");
+    const assetReqCollection = client.db("assetPulseDB").collection("assetReq");
 
-     // jwt api
-     app.post("/jwt", async (req, res) => {
+    // jwt api
+    app.post("/jwt", async (req, res) => {
       const user = req.body;
       const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
         expiresIn: "1h",
@@ -41,8 +41,8 @@ async function run() {
       res.send({ token });
     });
 
-     // middlewares
-     const verifyToken = (req, res, next) => {
+    // middlewares
+    const verifyToken = (req, res, next) => {
       // console.log("Inside Middleware Token", req.headers.authorization);
       if (!req.headers.authorization) {
         return res.status(401).send({ message: "Unauthorized access" });
@@ -58,7 +58,7 @@ async function run() {
       //next();
     };
 
-    const verifyAdmin =  async (req, res, next) => {
+    const verifyAdmin = async (req, res, next) => {
       const email = req.decoded.email;
       const query = { email: email };
       const user = await userCollection.findOne(query);
@@ -112,7 +112,6 @@ async function run() {
       res.send({ employee });
     });
 
-
     app.post("/users", async (req, res) => {
       const user = req.body;
       const query = { email: user.email };
@@ -138,10 +137,18 @@ async function run() {
 
     app.get("/assets/:id", async (req, res) => {
       const id = req.params.id;
-      const query = { _id: new ObjectId (id) };
+      const query = { _id: new ObjectId(id) };
       const result = await assetCollection.findOne(query);
       res.send(result);
     });
+
+    app.delete("/assets/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await assetCollection.deleteOne(query);
+      res.send(result);
+    });
+
     // customReq api
     app.get("/customReq", async (req, res) => {
       const result = await customReqCollection.find().toArray();
@@ -156,26 +163,60 @@ async function run() {
 
     app.get("/customReq/:id", async (req, res) => {
       const id = req.params.id;
-      const query = { _id: new ObjectId (id) };
+      const query = { _id: new ObjectId(id) };
       const result = await customReqCollection.findOne(query);
       res.send(result);
     });
+    app.patch("/customReq/:id", async (req, res) => {
+      const item = req.body;
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const updatedDoc = {
+        $set: {
+          name: item.name,
+          price: item.price,
+          date: item.date,
+          type: item.type,
+          reason: item.reason,
+          additionalInfo: item.additionalInfo,
+        },
+      };
+      const result = await customReqCollection.updateOne(filter, updatedDoc);
+      res.send(result);
+    });
 
+    // assets req api's
+ app.get("/assetReq", async (req, res) => {
+      const result = await assetReqCollection.find().toArray();
+      res.send(result);
+    });
+
+    app.post("/assetReq", async (req, res) => {
+      const item = req.body;
+      const result = await assetReqCollection.insertOne(item);
+      res.send(result);
+    });
+
+    app.get("/assetReq/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await assetReqCollection.findOne(query);
+      res.send(result);
+    });
     // Send a ping to confirm a successful connection
     // await client.db("admin").command({ ping: 1 });
     // console.log("Pinged your deployment. You successfully connected to MongoDB!");
   } finally {
     // Ensures that the client will close when you finish/error
-   // await client.close();
+    // await client.close();
   }
 }
 run().catch(console.dir);
 
-
-app.get('/', (req, res) => {
-  res.send('AssetPulse Server is Running...')
-})
+app.get("/", (req, res) => {
+  res.send("AssetPulse Server is Running...");
+});
 
 app.listen(port, () => {
-  console.log(`AssetPulse Server is Running on port ${port}`)
-})
+  console.log(`AssetPulse Server is Running on port ${port}`);
+});

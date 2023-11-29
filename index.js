@@ -30,7 +30,9 @@ async function run() {
     // collections
     const userCollection = client.db("assetPulseDB").collection("users");
     const assetCollection = client.db("assetPulseDB").collection("assets");
-    const customReqCollection = client.db("assetPulseDB").collection("customReq");
+    const customReqCollection = client
+      .db("assetPulseDB")
+      .collection("customReq");
     const assetReqCollection = client.db("assetPulseDB").collection("assetReq");
 
     // jwt api
@@ -83,6 +85,13 @@ async function run() {
     // user's api
     app.get("/users", async (req, res) => {
       const result = await userCollection.find().toArray();
+      res.send(result);
+    });
+
+    app.get("/users/:email", async (req, res) => {
+      const email = req.params.email;
+      const query = { _id: new ObjectId(email) };
+      const result = await userCollection.findOne(query);
       res.send(result);
     });
 
@@ -175,7 +184,20 @@ async function run() {
       const result = await customReqCollection.findOne(query);
       res.send(result);
     });
+
     app.patch("/customReq/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const updatedDoc = {
+        $set: {
+          status: "approved",
+        },
+      };
+      const result = await customReqCollection.updateOne(filter, updatedDoc);
+      res.send(result);
+    });
+
+    app.put("/customReq/:id", async (req, res) => {
       const item = req.body;
       const id = req.params.id;
       const filter = { _id: new ObjectId(id) };
@@ -194,7 +216,7 @@ async function run() {
     });
 
     // assets req api's
- app.get("/assetReq", async (req, res) => {
+    app.get("/assetReq", async (req, res) => {
       const result = await assetReqCollection.find().toArray();
       res.send(result);
     });
@@ -211,6 +233,17 @@ async function run() {
       const result = await assetReqCollection.findOne(query);
       res.send(result);
     });
+    app.patch("/assetReq/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const updatedDoc = {
+        $set: {
+          status: "approved",
+        },
+      };
+      const result = await assetReqCollection.updateOne(filter, updatedDoc);
+      res.send(result);
+    });
 
     app.delete("/assetReq/:id", async (req, res) => {
       const id = req.params.id;
@@ -219,8 +252,8 @@ async function run() {
       res.send(result);
     });
 
-     // payment intent
-     app.post("/create-payment-intent", async (req, res) => {
+    // payment intent
+    app.post("/create-payment-intent", async (req, res) => {
       const { price } = req.body;
       const amount = parseInt(price * 100);
       // console.log(amount);

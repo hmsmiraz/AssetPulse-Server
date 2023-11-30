@@ -133,6 +133,22 @@ async function run() {
       res.send(result);
     });
 
+    app.put("/users/:id", async (req, res) => {
+      const item = req.body;
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const updatedDoc = {
+        $set: {
+          hasTeam: "yes",
+          companyName: companyName,
+          companyLogo: companyLogo,
+          adminEmail: adminEmail,
+        },
+      };
+      const result = await userCollection.updateOne(filter, updatedDoc);
+      res.send(result);
+    });
+
     // asset's api
     app.get("/assets", async (req, res) => {
       const result = await assetCollection.find().toArray();

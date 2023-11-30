@@ -149,6 +149,13 @@ async function run() {
       res.send(result);
     });
 
+    app.delete("/users/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await userCollection.deleteOne(query);
+      res.send(result);
+    });
+
     // asset's api
     app.get("/assets", async (req, res) => {
       const result = await assetCollection.find().toArray();
@@ -256,7 +263,7 @@ async function run() {
         $set: {
           status: "approved",
         },
-        $inc: {stockQuantity: -1},
+        // $inc: {stockQuantity: -1},
       };
       const result = await assetReqCollection.updateOne(filter, updatedDoc);
       res.send(result);

@@ -140,9 +140,9 @@ async function run() {
       const updatedDoc = {
         $set: {
           hasTeam: "yes",
-          companyName: companyName,
-          companyLogo: companyLogo,
-          adminEmail: adminEmail,
+          companyName: item.companyName,
+          companyLogo: item.companyLogo,
+          adminEmail: item.adminEmail,
         },
       };
       const result = await userCollection.updateOne(filter, updatedDoc);
@@ -256,6 +256,7 @@ async function run() {
         $set: {
           status: "approved",
         },
+        $inc: {stockQuantity: -1},
       };
       const result = await assetReqCollection.updateOne(filter, updatedDoc);
       res.send(result);

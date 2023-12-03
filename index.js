@@ -108,6 +108,7 @@ async function run() {
       }
       res.send({ admin });
     });
+
     app.get("/users/employee/:email", verifyToken, async (req, res) => {
       const email = req.params.email;
       if (email !== req.decoded.email) {
@@ -256,6 +257,7 @@ async function run() {
       const result = await assetReqCollection.findOne(query);
       res.send(result);
     });
+
     app.patch("/assetReq/:id", async (req, res) => {
       const id = req.params.id;
       const filter = { _id: new ObjectId(id) };
@@ -263,10 +265,19 @@ async function run() {
         $set: {
           status: "approved",
         },
-        // $inc: {stockQuantity: -1},
       };
       const result = await assetReqCollection.updateOne(filter, updatedDoc);
-      res.send(result);
+
+      const filter1 = await assetReqCollection.findOne(filter);
+      const query = { _id: new ObjectId (filter1.assetId) };
+     
+      const updatedDoc1 = {
+        $inc: { stockQuantity: -1 },
+      };
+      const result1 = await assetCollection.updateOne(query, updatedDoc1);
+      console.log("result", result)
+      console.log("result1", result1)
+      res.send({result , result1} );
     });
 
     app.delete("/assetReq/:id", async (req, res) => {
